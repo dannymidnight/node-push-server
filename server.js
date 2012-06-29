@@ -25,7 +25,7 @@ io.sockets.on('connection', function(socket) {
 
 	socket.on('seen', function(data) {
 		if (user)
-			server.emit('seen', user.id, data);
+      io.push('seen', user.id, data);
 	});
 
 	socket.on('disconnect', function(data) {
@@ -33,3 +33,8 @@ io.sockets.on('connection', function(socket) {
 			socket.leave(user.id);
 	});
 });
+
+// Push to a user
+io.push = function(event, userid, data) {
+  io.sockets.in(userid).emit(event, data);
+};
