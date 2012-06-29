@@ -16,5 +16,5 @@ server.configure('development', function(){
 });
 
 client.on("notification", function(data) {
-  server.emit("notification", data.userid, data.data);
+  server.in(data.userid).emit("notification", data.data);
 });
