@@ -1,5 +1,5 @@
 //
-// UDP client for recieving notifications
+// UDP client for receiving notifications
 //
 
 var	dgram = require('dgram'),
@@ -17,7 +17,7 @@ var client = module.exports = new events.EventEmitter();
 // Events
 server.on("message", function(msg, rinfo) {
   var data = JSON.parse(msg.toString());
-  clientlog.info(util.format("[client] Received notification #%d for user #%d", data['data']['notification']['id'], data.userid));
+  clientlog.info(util.format("[client] Received %s notification #%d for user #%d", data['data']['notification']['type'], data['data']['notification']['id'], data.userid));
   client.emit('notification', data);
 });
 
