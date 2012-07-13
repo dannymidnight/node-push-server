@@ -3,6 +3,7 @@
 //
 
 var config = require('./config'),
+    logger = require('./logger'),
     client = require('./client'),
     server = require('./server');
 

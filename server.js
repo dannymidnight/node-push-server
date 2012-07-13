@@ -2,12 +2,16 @@
 // Socket.io server for dishing out web sockets and shit.
 //
 
-var	sha1   = require('sha1'),
-    config = require('./config'),
-    io     = require('socket.io').listen(config.web_port);
+var	sha1   	= require('sha1'),
+    winston	= require('winston'),
+    util		= require('util'),
+    config 	= require('./config'),
+    io     	= require('socket.io').listen(config.web_port);
+
+var serverlog = winston.loggers.get('server');
 
 module.exports = io;
- 
+
 io.sockets.on('connection', function(socket) {
 	var user;
 
@@ -19,7 +23,7 @@ io.sockets.on('connection', function(socket) {
 			user = { id: data.id };
       socket.join(user.id);
 
-			console.log('User #%d connected', data.id);
+      serverlog.info(util.format('[server] User #%d connected', data.id));
 		}
 	});
 
@@ -36,5 +40,6 @@ io.sockets.on('connection', function(socket) {
 
 // Push to a user
 io.push = function(event, userid, data) {
+  serverlog.info(util.format('[server] Sent notification to user #%d', userid));
   io.sockets.in(userid).emit(event, data);
 };
