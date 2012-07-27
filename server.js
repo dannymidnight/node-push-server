@@ -23,7 +23,7 @@ io.sockets.on('connection', function(socket) {
 			user = { id: data.id };
       socket.join(user.id);
 
-      serverlog.info(util.format('[server] User #%d connected', data.id));
+      serverlog.info(util.format('[server] User #%d connected via %s', data.id, io.transports[socket.id].name));
 		}
 	});
 
