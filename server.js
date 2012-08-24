@@ -60,6 +60,8 @@ io.sockets.on('connection', function(socket) {
 
 // Push to a user
 io.push = function(event, userid, data) {
-  serverlog.info(util.format('[server] Emitted %s to user: #%d', event, userid));
-  io.sockets.in(userid).emit(event, data);
+  if (Object.keys(io.sockets.clients(userid)).length) {
+    serverlog.info(util.format('[server] Emitted %s to user: #%d', event, userid));
+    io.sockets.in(userid).emit(event, data);
+  }
 };
