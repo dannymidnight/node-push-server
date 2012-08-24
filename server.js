@@ -23,6 +23,7 @@ io.configure(function (){
 				.get(sessioncheck_url)
 				.on('complete', function(data,response) {
 					if (response.statusCode == 200 && data) {
+						handshakeData.userid = userid;
 						callback(null, true);
 					} else {
 						callback(null, false);
@@ -35,26 +36,30 @@ io.configure(function (){
 });
 
 io.sockets.on('connection', function(socket) {
-	var user;
+	var userid = socket.handshake.userid,
+     totalRooms = 0;
 
-	socket.on('user', function(data) {
-		socket.join(data.userid);
-		serverlog.info(util.format('[server] User #%d connected via %s', data.userid, io.transports[socket.id].name));
-	});
+  if (!userid) {
+    socket.disconnect();
+  }
+
+	socket.join(userid);
+	totalRooms = Object.keys(io.sockets.manager.rooms).length - 1;
+
+	serverlog.info(util.format('[server] %s rooms open', totalRooms));
+	serverlog.info(util.format('[server] User #%d connected via %s', userid, io.transports[socket.id].name));
 
 	socket.on('seen', function(data) {
-		if (user)
-      io.push('seen', user.id, data);
+    io.push('seen', userid, data);
 	});
 
 	socket.on('disconnect', function(data) {
-		if (user)
-			socket.leave(user.id);
+		socket.leave(userid);
 	});
 });
 
 // Push to a user
 io.push = function(event, userid, data) {
-  serverlog.info(util.format('[server] Sent notification to user #%d', userid));
+  serverlog.info(util.format('[server] Emitted %s to user: #%d', event, userid));
   io.sockets.in(userid).emit(event, data);
 };
