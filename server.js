@@ -52,10 +52,6 @@ io.sockets.on('connection', function(socket) {
 	socket.on('seen', function(data) {
     io.push('seen', userid, data);
 	});
-
-	socket.on('disconnect', function(data) {
-		socket.leave(userid);
-	});
 });
 
 // Push to a user
