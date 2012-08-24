@@ -22,7 +22,7 @@ io.configure(function (){
 			rest
 				.get(sessioncheck_url)
 				.on('complete', function(data,response) {
-					if (response.statusCode == 200 && data) {
+					if (response && response.statusCode == 200 && data) {
 						handshakeData.userid = userid;
 						callback(null, true);
 					} else {
