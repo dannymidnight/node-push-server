@@ -7,7 +7,14 @@ var config = require('./config'),
     ws = require('./lib/ws_server');
 
 
-ws = ws(config);
+ws = ws({
+  session_host: config.contests_http_host,
+  web_port: config.web_port,
+  redis_host: config.redis.host,
+  redis_port: config.redis.port,
+  redis_auth: config.redis.auth
+});
+
 udp.listen(config.udp_port);
 
 ws.configure('production', function(){
