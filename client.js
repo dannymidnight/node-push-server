@@ -16,7 +16,12 @@ var client = module.exports = new events.EventEmitter();
 
 // Events
 server.on("message", function(msg, rinfo) {
-  var data = JSON.parse(msg.toString());
+	try {
+		var data = JSON.parse(msg.toString());
+	} catch(e) {
+		clientlog.error('[client] Dropped malformed message string (' + e.message + ') : ' + msg);
+		return;
+	}
   clientlog.info(util.format("[client] Received %s notification #%d for user #%d", data['data']['notification']['type'], data['data']['notification']['id'], data.userid));
   client.emit('notification', data);
 });
