@@ -1,21 +1,24 @@
 //
-// Main app for firing up pocket client and server
+// Main app for firing up upd & socket servers
 //
 
 var config = require('./config'),
-    logger = require('./logger'),
-    client = require('./client'),
-    server = require('./server');
+    udp = require('./lib/udp_server'),
+    ws = require('./lib/ws_server');
 
-server.configure('production', function(){
-  server.set('log level', 1);
-  server.set('transports', ['websocket']);
+
+ws = ws(config);
+udp.listen(config.udp_port);
+
+ws.configure('production', function(){
+  ws.set('log level', 1);
+  ws.set('transports', ['websocket']);
 });
 
-server.configure('development', function(){
-  server.set('transports', ['websocket']);
+ws.configure('development', function(){
+  ws.set('transports', ['websocket']);
 });
 
-client.on("notification", function(data) {
-  server.push('notification', data.userid, data.data);
+udp.on("notification", function(data) {
+  ws.push('notification', data.userid, data.data);
 });
