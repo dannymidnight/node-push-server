@@ -5,7 +5,9 @@
 var config = require('./config'),
     udp = require('./lib/udp_server'),
     ws = require('./lib/ws_server'),
-    redis = require('./lib/redis').create(config.redis);
+    redis = require('./lib/redis').create(config.redis),
+    redisPub = require('./lib/redis').create(config.redis),
+    redisSub = require('./lib/redis').create(config.redis);
 
 
 redis.flushall(function(didSucceed) {
@@ -19,7 +21,9 @@ redis.flushall(function(didSucceed) {
 ws = ws({
   session_host: config.contests_http_host,
   web_port: config.web_port,
-  redisClient: redis
+  redisClient: redis,
+  redisPub:	redisPub,
+  redisSub: redisSub
 });
 
 
