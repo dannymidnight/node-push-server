@@ -4,15 +4,22 @@
 
 var config = require('./config'),
     udp = require('./lib/udp_server'),
-    ws = require('./lib/ws_server');
+    ws = require('./lib/ws_server'),
+    redis = require('./lib/redis').create(config.redis);
 
+
+redis.flushall(function(didSucceed) {
+  if (didSucceed) {
+    console.log('Successfully flushed redis');
+  } else {
+    console.log('Failed to flush redis');
+  }
+});
 
 ws = ws({
   session_host: config.contests_http_host,
   web_port: config.web_port,
-  redis_host: config.redis.host,
-  redis_port: config.redis.port,
-  redis_auth: config.redis.auth
+  redisClient: redis
 });
 
 

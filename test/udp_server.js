@@ -1,4 +1,3 @@
-
 var udp = require('../lib/udp_server');
 
 describe('messages', function() {
