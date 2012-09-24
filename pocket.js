@@ -18,9 +18,6 @@ var config = require('./config'),
 
 if (cluster.isMaster) {
 
-  // Only spin up one udp
-  udp.listen(config.udp_port);
-
   redis.flushall(function(didSucceed) {
     if (didSucceed) {
       console.log('Successfully flushed redis');
@@ -31,11 +28,16 @@ if (cluster.isMaster) {
 
   // Fork workers.
   for (var i = 0; i < numCPUs; i++) {
-    cluster.fork();
+    cluster.fork({HEAD_FORK: true});
   }
 
   cluster.on('exit', function(worker, code, signal) {
     console.log('worker ' + worker.process.pid + ' died');
+  });
+
+  udp.listen(config.udp_port);
+  udp.on("notification", function(data) {
+    redisPub.publish('notification', JSON.stringify(data));
   });
 
 } else {
@@ -57,7 +59,17 @@ if (cluster.isMaster) {
     ws.set('transports', ['websocket']);
   });
 
-  udp.on("notification", function(data) {
-    ws.push('notification', data.userid, data.data);
-  });
+
+  // FIXME: tidy this up.
+  if (process.env.NODE_WORKER_ID == 1) {
+
+    redisSub.on('message', function(channel, msg) {
+      var data = JSON.parse(msg);
+      if (channel == 'notification') {
+        ws.push('notification', data.userid, data.data);
+      }
+    });
+
+    redisSub.subscribe('notification');
+  }
 }
