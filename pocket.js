@@ -16,10 +16,32 @@ var config = require('./config'),
     numCPUs = require('os').cpus().length;
 
 
+ws = ws({
+  session_host: config.contests_http_host,
+  web_port: config.web_port,
+  redisClient: redis,
+  redisPub:	redisPub,
+  redisSub: redisSub
+});
+
+ws.configure('production', function(){
+  ws.set('log level', 1);
+  ws.set('transports', ['websocket']);
+});
+
+ws.configure('development', function(){
+  ws.set('transports', ['websocket']);
+});
+
+
 if (cluster.isMaster) {
 
-  // Only spin up one udp
+  // Only spin up one udp server
   udp.listen(config.udp_port);
+
+  udp.on("notification", function(data) {
+    ws.push('notification', data.userid, data.data);
+  });
 
   redis.flushall(function(didSucceed) {
     if (didSucceed) {
@@ -29,35 +51,12 @@ if (cluster.isMaster) {
     }
   });
 
-  // Fork workers.
-  for (var i = 0; i < numCPUs; i++) {
+  // Fork workers minus the current master
+  for (var i = 0; i < numCPUs - 1; i++) {
     cluster.fork();
   }
 
   cluster.on('exit', function(worker, code, signal) {
     console.log('worker ' + worker.process.pid + ' died');
-  });
-
-} else {
-
-  ws = ws({
-    session_host: config.contests_http_host,
-    web_port: config.web_port,
-    redisClient: redis,
-    redisPub:	redisPub,
-    redisSub: redisSub
-  });
-
-  ws.configure('production', function(){
-    ws.set('log level', 1);
-    ws.set('transports', ['websocket']);
-  });
-
-  ws.configure('development', function(){
-    ws.set('transports', ['websocket']);
-  });
-
-  udp.on("notification", function(data) {
-    ws.push('notification', data.userid, data.data);
   });
 }
