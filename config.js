@@ -14,9 +14,9 @@ var config = {
   contests_http_host: '99designs.com',
 
   redis: {
-    port: "9530",
-    host: "barb.redistogo.com",
-    auth: "e8c0ba434b2fddeb96b27c499ec07469"
+    port: "9979",
+    host: "tetra.redistogo.com",
+    auth: "9ebdcea4302e7d847d8bb430d19792cf"
   }
 };
 
