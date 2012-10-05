@@ -44,10 +44,7 @@ if (cluster.isMaster) {
 
   ws = ws({
     session_host: config.contests_http_host,
-    web_port: config.web_port,
-    redisClient: redis,
-    redisPub:	redisPub,
-    redisSub: redisSub
+    web_port: config.web_port
   });
 
   ws.configure('production', function(){
