@@ -13,7 +13,7 @@ var config = require('./config'),
 
     // Clustering
     cluster = require('cluster'),
-    numCPUs = require('os').cpus().length;
+    numCPUs = 1; //require('os').cpus().length;
 
 
 if (cluster.isMaster) {
