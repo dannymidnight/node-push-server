@@ -8,10 +8,10 @@ var config = require('./config'),
 
     // Clustering
     cluster = require('cluster'),
-    numCPUs = require('os').cpus().length,
+    numCPUs = 1; // require('os').cpus().length,
 
     // Redis channels.
-    redis = require('./lib/redis').create(config.redis),
+    redis = require('./lib/redis').create(config.redis);
     Channels = require('./lib/channels');
 
 if (cluster.isMaster) {
@@ -34,17 +34,17 @@ if (cluster.isMaster) {
   });
 
   // TODO - split this out.
-  var channels = new Channels({ redis: config.redis });
+  var channels = new Channels(config.redis);
   udp.listen(config.udp_port);
   udp.on("notification", function(data) {
-    channels.emit(data.userid, 'notification', JSON.stringify(data));
+    // channels.emit(data.userid, 'notification', JSON.stringify(data));
   });
   // --
 
 } else {
 
   ws = ws({
-    channels: new Channels({ redis: config.redis }),
+    channels: new Channels(config.redis),
     session_host: config.contests_http_host,
     web_port: config.web_port
   });
