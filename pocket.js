@@ -6,15 +6,13 @@ var config = require('./config'),
     udp = require('./lib/udp_server'),
     ws = require('./lib/ws_server'),
 
-    // Redis
-    redis = require('./lib/redis').create(config.redis),
-    redisPub = require('./lib/redis').create(config.redis),
-    redisSub = require('./lib/redis').create(config.redis),
-
     // Clustering
     cluster = require('cluster'),
-    numCPUs = 1; //require('os').cpus().length;
+    numCPUs = require('os').cpus().length,
 
+    // Redis channels.
+    redis = require('./lib/redis').create(config.redis),
+    Channels = require('./lib/channels');
 
 if (cluster.isMaster) {
 
@@ -28,21 +26,25 @@ if (cluster.isMaster) {
 
   // Fork workers.
   for (var i = 0; i < numCPUs; i++) {
-    cluster.fork({HEAD_FORK: true});
+    cluster.fork();
   }
 
   cluster.on('exit', function(worker, code, signal) {
     console.log('worker ' + worker.process.pid + ' died');
   });
 
+  // TODO - split this out.
+  var channels = new Channels({ redis: config.redis });
   udp.listen(config.udp_port);
   udp.on("notification", function(data) {
-    redisPub.publish('notification', JSON.stringify(data));
+    channels.emit(data.userid, 'notification', JSON.stringify(data));
   });
+  // --
 
 } else {
 
   ws = ws({
+    channels: new Channels({ redis: config.redis }),
     session_host: config.contests_http_host,
     web_port: config.web_port
   });
@@ -55,18 +57,4 @@ if (cluster.isMaster) {
   ws.configure('development', function(){
     ws.set('transports', ['websocket']);
   });
-
-
-  // FIXME: tidy this up.
-  if (process.env.NODE_WORKER_ID == 1) {
-
-    redisSub.on('message', function(channel, msg) {
-      var data = JSON.parse(msg);
-      if (channel == 'notification') {
-        ws.push('notification', data.userid, data.data);
-      }
-    });
-
-    redisSub.subscribe('notification');
-  }
 }
