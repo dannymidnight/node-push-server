@@ -37,7 +37,7 @@ if (cluster.isMaster) {
   var channels = new Channels(config.redis);
   udp.listen(config.udp_port);
   udp.on("notification", function(data) {
-    // channels.emit(data.userid, 'notification', JSON.stringify(data));
+    channels.emit(data.userid, 'notification', JSON.stringify(data));
   });
   // --
 
